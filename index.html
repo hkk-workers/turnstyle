@@ -54,7 +54,9 @@
 
     document.getElementById('captcha-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-
+      
+console.log("📨 submit 이벤트 발생");
+      
       if (!token) {
         document.getElementById('result').innerText = '❗ 토큰이 아직 없습니다.';
         return;
