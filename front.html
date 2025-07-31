@@ -12,9 +12,11 @@
       padding: 1rem;
       background: #f9f9f9;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    h1 { text-align: center; }
+    h1 {
+      text-align: center;
+    }
     #result {
       margin-top: 1.5rem;
       padding: 1rem;
@@ -23,46 +25,69 @@
       white-space: pre-wrap;
       font-size: 0.9rem;
     }
+    .success {
+      color: green;
+    }
+    .fail {
+      color: red;
+    }
   </style>
 </head>
 <body>
-  <h1>이 페이지가 보이면 인증 통과입니다~ 🎉</h1>
+  <h1>Cloudflare Turnstile 인증</h1>
 
-  <!-- Turnstile 위젯 -->
-  <div class="cf-turnstile"
-       data-sitekey="0x4AAAAAABilP58cQCm8xNDN"  <!-- ✅ Site Key로 교체 -->
-       data-callback="onVerified"></div>
+  <form id="captcha-form">
+    <!-- Turnstile 위젯 -->
+    <div class="cf-turnstile" 
+         data-sitekey="0x4AAAAAABilP58cQCm8xNDN"
+         data-callback="onVerified">
+    </div>
+    <br/>
+    <button type="submit">인증 요청</button>
+  </form>
 
-  <div id="result">Turnstile 검증 결과가 여기에 표시됩니다.</div>
+  <div id="result">검증 결과가 여기에 표시됩니다.</div>
 
   <script>
-    function onVerified(token) {
-      console.log('✅ Turnstile 토큰:', token);
+    let token = null;
 
-      fetch('/api/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ token })
-      })
-      .then(res => res.json())
-      .then(data => {
-        console.log("🎯 인증 응답:", data);
-        const resultBox = document.getElementById('result');
-        if (data.success) {
-          resultBox.innerText = '✅ 인증 성공\n\n' + JSON.stringify(data, null, 2);
-          resultBox.style.backgroundColor = '#d3f9d8';
-        } else {
-          resultBox.innerText = '❌ 인증 실패\n\n' + JSON.stringify(data, null, 2);
-          resultBox.style.backgroundColor = '#ffe3e3';
-        }
-      })
-      .catch(err => {
-        console.error("❌ 인증 오류:", err);
-        document.getElementById('result').innerText = '⚠️ 인증 중 오류 발생: ' + err;
-      });
+    // Turnstile 토큰 콜백
+    function onVerified(newToken) {
+      console.log("✅ Turnstile 토큰:", newToken);
+      token = newToken;
     }
+
+    document.getElementById('captcha-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!token) {
+        document.getElementById('result').innerText = '❗ 토큰이 아직 없습니다.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ token })
+        });
+
+        const data = await res.json();
+        console.log("서버 응답:", data);
+
+        if (data.success) {
+          document.getElementById('result').innerHTML = `<span class="success">✅ 인증 성공</span>\n\n<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } else {
+          document.getElementById('result').innerHTML = `<span class="fail">❌ 인증 실패</span>\n\n<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+      } catch (err) {
+        console.error("❌ 에러:", err);
+        document.getElementById('result').innerText = `⚠️ 오류 발생\n\n${err}`;
+      }
+    });
   </script>
 </body>
 </html>
