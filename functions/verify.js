@@ -1,6 +1,7 @@
 export async function onRequestPost(context) {
   const { token } = await context.request.json();
-  const secret = "0x4AAAAAABilP4-JfLqG2E7Nt_O0170LPNc";
+
+  const secret = "0x4AAAAAABilP4-JfLqG2E7Nt_O0170LPNc"; // ✅ Secret Key로 교체 (절대 노출 금지)
 
   const formData = new URLSearchParams();
   formData.append("secret", secret);
@@ -15,11 +16,12 @@ export async function onRequestPost(context) {
   });
 
   const result = await verifyResponse.json();
+  console.log("🔍 Turnstile 응답:", result);
 
   return new Response(JSON.stringify(result), {
     status: 200,
     headers: {
-      "content-type": "application/json",
-    },
+      "content-type": "application/json"
+    }
   });
 }
