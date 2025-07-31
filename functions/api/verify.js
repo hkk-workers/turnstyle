@@ -1,7 +1,7 @@
 export async function onRequestPost(context) {
   const { token } = await context.request.json();
 
-  const secret = "0x4AAAAAABilP4-JfLqG2E7Nt_O0170LPNc"; // ✅ Secret Key로 교체 (절대 노출 금지)
+  const secret = "0x4AAAAAABilP4-JfLqG2E7Nt_O0170LPNc"; // 실제 secret key 사용
 
   const formData = new URLSearchParams();
   formData.append("secret", secret);
