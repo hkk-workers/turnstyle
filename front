@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cloudflare Turnstile Demo</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+  <h1>Turnstile 인증</h1>
+
+  <form id="captcha-form" method="POST">
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAABilP58cQCm8xNDN"></div>
+    <br/>
+    <button type="submit">제출</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    document.getElementById('captcha-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = document.querySelector('[name="cf-turnstile-response"]').value;
+      const response = await fetch('/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      const result = await response.json();
+      document.getElementById('result').innerText = result.success
+        ? '✅ 인증 성공'
+        : '❌ 인증 실패';
+    });
+  </script>
+</body>
+</html>
