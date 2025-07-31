@@ -25,18 +25,22 @@
       white-space: pre-wrap;
       font-size: 0.9rem;
     }
-    .success { color: green; }
-    .fail { color: red; }
+    .success {
+      color: green;
+    }
+    .fail {
+      color: red;
+    }
   </style>
 </head>
 <body>
   <h1>Cloudflare Turnstile 인증</h1>
 
   <form id="captcha-form">
-    <div class="cf-turnstile"
+    <!-- Turnstile 위젯 -->
+    <div class="cf-turnstile" 
          data-sitekey="0x4AAAAAABilP58cQCm8xNDN"
-         data-callback="onVerified"
-         data-theme="light">
+         data-callback="onVerified">
     </div>
     <br/>
     <button type="submit">인증 요청</button>
@@ -47,30 +51,35 @@
   <script>
     let token = null;
 
+    // ✅ 콜백 함수 (Turnstile 토큰 발급 시 호출됨)
     function onVerified(newToken) {
-      console.log("✅ Turnstile 토큰:", newToken);
+      console.log("✅ [onVerified] 토큰 발급됨:", newToken);
       token = newToken;
     }
 
+    // ✅ 폼 제출 이벤트
     document.getElementById('captcha-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
-console.log("📨 submit 이벤트 발생");
-      
+      console.log("📨 [submit] 인증 요청 시작");
+
       if (!token) {
+        console.warn("⚠️ [submit] 토큰이 아직 없음");
         document.getElementById('result').innerText = '❗ 토큰이 아직 없습니다.';
         return;
       }
 
       try {
+        console.log("🌐 [submit] 서버에 POST 요청 전송 중...");
         const res = await fetch('/api/verify', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({ token })
         });
 
         const data = await res.json();
-        console.log("서버 응답:", data);
+        console.log("📩 [submit] 서버 응답 수신:", data);
 
         if (data.success) {
           document.getElementById('result').innerHTML = `<span class="success">✅ 인증 성공</span>\n\n<pre>${JSON.stringify(data, null, 2)}</pre>`;
@@ -79,7 +88,7 @@ console.log("📨 submit 이벤트 발생");
         }
 
       } catch (err) {
-        console.error("❌ 에러:", err);
+        console.error("❌ [submit] 에러 발생:", err);
         document.getElementById('result').innerText = `⚠️ 오류 발생\n\n${err}`;
       }
     });
